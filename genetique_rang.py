@@ -69,4 +69,4 @@ def genetic_algorithm_rang(pop_size=40, generations=100, crossover_rate=0.9, mut
 
 if __name__ == "__main__":
     sol, cost = genetic_algorithm_rang()
-    print(f"✅ Solution finale Génétique (Rang) : {sol} | Coût = {cost}")
+    print(f" Solution finale Génétique (Rang) : {sol} | Coût = {cost}")
