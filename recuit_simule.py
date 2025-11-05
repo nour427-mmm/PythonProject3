@@ -38,4 +38,4 @@ def simulated_annealing(T_init=100, alpha=0.95, max_iter=200):
 
 if __name__ == "__main__":
     sol, cost = simulated_annealing()
-    print(f"✅ Solution finale Recuit simulé : {sol} | Coût = {cost}")
+    print(f" Solution finale Recuit simulé : {sol} | Coût = {cost}")
