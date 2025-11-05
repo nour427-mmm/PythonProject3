@@ -69,4 +69,4 @@ def genetic_algorithm_roulette(pop_size=40, generations=100, crossover_rate=0.9,
 
 if __name__ == "__main__":
     sol, cost = genetic_algorithm_roulette()
-    print(f"✅ Solution finale Génétique (Roulette) : {sol} | Coût = {cost}")
+    print(f" Solution finale Génétique (Roulette) : {sol} | Coût = {cost}")
