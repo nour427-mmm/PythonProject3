@@ -46,4 +46,4 @@ def tabu_search(max_iter=100, tabu_size=5):
 
 if __name__ == "__main__":
     sol, cost = tabu_search()
-    print(f"✅ Solution finale Tabou : {sol} | Coût = {cost}")
+    print(f" Solution finale Tabou : {sol} | Coût = {cost}")
