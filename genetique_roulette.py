@@ -1,81 +1,82 @@
 import random
 import numpy as np
 
-NB_TACHES = 10
-DISTANCES = np.array([
-    [0, 2, 9, 10, 7, 3, 8, 6, 4, 9],
-    [2, 0, 5, 6, 4, 9, 3, 7, 8, 2],
-    [9, 5, 0, 3, 8, 7, 4, 2, 6, 9],
-    [10, 6, 3, 0, 9, 4, 5, 8, 7, 3],
-    [7, 4, 8, 9, 0, 5, 6, 3, 2, 8],
-    [3, 9, 7, 4, 5, 0, 2, 8, 6, 9],
-    [8, 3, 4, 5, 6, 2, 0, 9, 7, 1],
-    [6, 7, 2, 8, 3, 8, 9, 0, 5, 2],
-    [4, 8, 6, 7, 2, 6, 7, 5, 0, 3],
-    [9, 2, 9, 3, 8, 9, 1, 2, 3, 0]
-])
 
+tasks = [4, 3, 7, 2, 5, 6, 8, 5, 9, 4]
+NB_TACHES = len(tasks)
 POPULATION_SIZE = 80
 NB_GENERATIONS = 100
 MUTATION_RATE = 0.3
 
-def cout(solution):
-    return sum(DISTANCES[solution[i], solution[i + 1]] for i in range(len(solution) - 1))
+
+def evaluate(solution):
+    total, current = 0, 0
+    for t in solution:
+        current += tasks[t]
+        total += current
+    return total
 
 def fitness(solution):
-    return 1 / (cout(solution) + 1)
+    return 1 / (evaluate(solution) + 1)
 
-def selection_par_roulette(population):
+def selection_roulette(population):
     scores = [fitness(ind) for ind in population]
     total = sum(scores)
-    probabilities = [s / total for s in scores]
-    return random.choices(population, weights=probabilities, k=2)
+    probs = [s / total for s in scores]
+    return random.choices(population, weights=probs, k=2)
 
-def croisement_simple(parent1, parent2):
+def croisement_simple(p1, p2):
     point = random.randint(1, NB_TACHES - 2)
-    child = parent1[:point] + [x for x in parent2 if x not in parent1[:point]]
-    return child
+    return p1[:point] + [x for x in p2 if x not in p1[:point]]
 
-def croisement_double(parent1, parent2):
-    p1, p2 = sorted(random.sample(range(NB_TACHES), 2))
-    segment = parent1[p1:p2]
-    child = [x for x in parent2 if x not in segment]
-    return child[:p1] + segment + child[p1:]
+def croisement_double(p1, p2):
+    a, b = sorted(random.sample(range(NB_TACHES), 2))
+    seg = p1[a:b]
+    child = [x for x in p2 if x not in seg]
+    return child[:a] + seg + child[a:]
 
-def croisement_uniforme(parent1, parent2):
+def croisement_uniforme(p1, p2):
     child = []
     for i in range(NB_TACHES):
-        gene = parent1[i] if random.random() < 0.5 else parent2[i]
+        gene = p1[i] if random.random() < 0.5 else p2[i]
         if gene not in child:
             child.append(gene)
-    for gene in range(NB_TACHES):
-        if gene not in child:
-            child.append(gene)
+    for g in range(NB_TACHES):
+        if g not in child:
+            child.append(g)
     return child
 
-def mutation(solution):
+def mutation(sol):
     if random.random() < MUTATION_RATE:
         i, j = random.sample(range(NB_TACHES), 2)
-        solution[i], solution[j] = solution[j], solution[i]
-    return solution
+        sol[i], sol[j] = sol[j], sol[i]
+    return sol
 
-def algo_genetique_roulette(croisement_fonction, nom_croisement):
+def algo_genetique_roulette(croisement, nom_croisement):
     population = [random.sample(range(NB_TACHES), NB_TACHES) for _ in range(POPULATION_SIZE)]
-    for _ in range(NB_GENERATIONS):
-        nouvelle_pop = []
+    best = min(population, key=evaluate)
+    best_cost = evaluate(best)
+
+    for gen in range(NB_GENERATIONS):
+        new_pop = []
         for _ in range(POPULATION_SIZE // 2):
-            p1, p2 = selection_par_roulette(population)
-            enfant1 = mutation(croisement_fonction(p1, p2))
-            enfant2 = mutation(croisement_fonction(p2, p1))
-            nouvelle_pop.extend([enfant1, enfant2])
-        population = nouvelle_pop
-    meilleur = min(population, key=cout)
-    print(f"\n--- Résultat avec {nom_croisement} ---")
-    print(f"Meilleure solution trouvée: {meilleur}")
-    print(f"Distance minimale: {cout(meilleur)}")
+            p1, p2 = selection_roulette(population)
+            e1 = mutation(croisement(p1, p2))
+            e2 = mutation(croisement(p2, p1))
+            new_pop += [e1, e2]
+        population = new_pop
 
-print("Lancement de l'algorithme génétique avec SÉLECTION PAR ROULETTE...")
+        cur_best = min(population, key=evaluate)
+        if evaluate(cur_best) < best_cost:
+            best, best_cost = cur_best, evaluate(cur_best)
+            print(f"[Roulette] {nom_croisement} Génération {gen + 1}: coût = {best_cost}")
 
-algo_genetique_roulette(croisement_simple, "Croisement Simple Ordonné")
-algo_genetique_roulette(croisement_double, "Croisement Double Ordonné")
-algo_genetique_roulette(croisement_uniforme, "Croisement Uniforme")
+    print(f"\n Résultat final ({nom_croisement})")
+    print(f"Solution : {best}")
+    print(f"Coût minimal : {best_cost}\n")
+
+if __name__ == "__main__":
+    print("===  ALG. GÉNÉTIQUE – SÉLECTION PAR ROULETTE ===")
+    algo_genetique_roulette(croisement_simple, "Croisement Simple")
+    algo_genetique_roulette(croisement_double, "Croisement Double")
+    algo_genetique_roulette(croisement_uniforme, "Croisement Uniforme")
